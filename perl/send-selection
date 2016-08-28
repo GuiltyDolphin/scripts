@@ -188,4 +188,8 @@ Start with the selection as 'foo' and the command as 'cat', but still prompt:
 
   send-selection --selection='foo' --command='cat' --prompt-selection --prompt-command
 
+=head1 AUTHOR
+
+Ben Moon C<< <software@guiltydolphin.com> >>
+
 =cut
