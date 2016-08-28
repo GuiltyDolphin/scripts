@@ -43,3 +43,34 @@ exit 1 unless $selection;
 my $command   = get_program;
 exit 1 unless $command;
 run_program($command, $selection);
+
+__END__
+
+=head1 NAME
+
+send-selection - Send the X-selection to a program
+
+=head1 SYNOPSIS
+
+send-selection [options]
+
+=head1 OPTIONS
+
+=over
+
+=item B<--help>
+
+Print a brief help message and exit.
+
+=item B<--man>
+
+Display the manual page and exit.
+
+=back
+
+=head1 DESCRIPTION
+
+B<send-selection> allows retrieval and interactive modification of the
+X-selection before sending it to a command.
+
+=cut
