@@ -79,6 +79,9 @@ sub send_selection {
     run_program($command, $selection);
 }
 
+sub print_version {
+    pod2usage(-exitval => 0, -verbose => 99, -sections => 'VERSION');
+}
 
 my %cl_options;
 GetOptions(\%cl_options,
@@ -89,10 +92,12 @@ GetOptions(\%cl_options,
     "prompt-selection",
     "selection=s",
     "selection-command=s",
+    "version",
 ) or pod2usage(2);
 
 pod2usage(1) if $cl_options{help};
 pod2usage(-exitval => 0, -verbose => 2) if $cl_options{man};
+print_version() if $cl_options{version};
 
 send_selection(%cl_options);
 
@@ -101,6 +106,10 @@ __END__
 =head1 NAME
 
 send-selection - Send the X-selection to a program
+
+=head1 VERSION
+
+version 0.1.0
 
 =head1 SYNOPSIS
 
@@ -145,6 +154,10 @@ B<--selection> will be used.
 
 Use I<string> as the command for retrieving the initial text rather than
 B<sselp> (the default).
+
+=item B<--version>
+
+Print version information.
 
 =back
 
