@@ -24,9 +24,12 @@ sub get_selection {
 }
 
 sub get_program {
+    my ($cmd, $prompt) = @_;
+    return $cmd if $cmd && !$prompt;
     my $prog;
     run(
-        command => "$zenity --entry --title 'Command' --text 'Enter command:'",
+        command => "$zenity --entry --title 'Command' " .
+            qq{--text 'Enter command:' --entry-text='$cmd'},
         buffer => \$prog,
     );
     chomp $prog;
@@ -56,10 +59,12 @@ sub send_selection {
     my $selection_command = check_command(
         $options{'selection-command'} || 'sselp'
     );
+    my $should_prompt_command = $options{'prompt-command'} ||
+        !$options{command};
 
     my $selection = get_selection($selection_command);
     exit 1 unless $selection;
-    my $command   = get_program;
+    my $command   = get_program($options{command}, $should_prompt_command);
     exit 1 unless $command;
     run_program($command, $selection);
 }
@@ -67,9 +72,11 @@ sub send_selection {
 
 my %cl_options;
 GetOptions(\%cl_options,
+    "command=s",
     "help|?",
     "man",
-    "selection-command=s"
+    "prompt-command",
+    "selection-command=s",
 ) or pod2usage(2);
 
 pod2usage(1) if $cl_options{help};
@@ -91,6 +98,12 @@ send-selection [options]
 
 =over
 
+=item B<--command>=I<string>
+
+Use I<string> as the command for processing the text and don't prompt the user.
+In conjunction with B<--prompt-command> this uses I<string> as the default
+text.
+
 =item B<--help>
 
 Print a brief help message and exit.
@@ -98,6 +111,10 @@ Print a brief help message and exit.
 =item B<--man>
 
 Display the manual page and exit.
+
+=item B<--prompt-command>
+
+Prompt the user for a command regardless of other flags.
 
 =item B<--selection-command>=I<string>
 
