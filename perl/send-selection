@@ -6,6 +6,8 @@
 # piping process needs a bit of work.
 
 use IPC::Cmd qw(can_run run run_forked);
+use Getopt::Long;
+use Pod::Usage;
 
 my $sselp  = can_run('sselp')  or die 'sselp is not installed!';
 my $zenity = can_run('zenity') or die 'zenity is not installed!';
@@ -37,6 +39,15 @@ sub run_program {
         child_stdin => $selection,
     });
 }
+
+my %options;
+GetOptions(\%options,
+    "help|?",
+    "man",
+) or pod2usage(2);
+
+pod2usage(1) if $options{help};
+pod2usage(-exitval => 0, -verbose => 2) if $options{man};
 
 my $selection = get_selection;
 exit 1 unless $selection;
