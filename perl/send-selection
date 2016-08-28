@@ -173,4 +173,19 @@ Print version information.
 B<send-selection> allows retrieval and interactive modification of the
 X-selection before sending it to a command.
 
+=head1 EXAMPLES
+
+Use the current X-clipboard contents rather than the selection (via B<xclip>):
+
+  send-selection --selection-command='xclip -o'
+
+Don't use the selection, instead require the user to enter all the text, then
+evaluate the text in python:
+
+  send-selection --selection-command='true' --command='python'
+
+Start with the selection as 'foo' and the command as 'cat', but still prompt:
+
+  send-selection --selection='foo' --command='cat' --prompt-selection --prompt-command
+
 =cut
