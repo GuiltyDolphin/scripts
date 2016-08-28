@@ -9,11 +9,11 @@ use IPC::Cmd qw(can_run run run_forked);
 use Getopt::Long;
 use Pod::Usage;
 
-my $sselp  = can_run('sselp')  or die 'sselp is not installed!';
 my $zenity = can_run('zenity') or die 'zenity is not installed!';
 
 sub get_selection {
-    my $sel = run_forked($sselp);
+    my ($selection_command) = @_;
+    my $sel = run_forked($selection_command);
     chomp (my $selection = $sel->{stdout});
     my $modified = run_forked(
         "$zenity --text-info --title 'Selection' --editable",
@@ -40,20 +40,42 @@ sub run_program {
     });
 }
 
-my %options;
-GetOptions(\%options,
+sub check_command {
+    my ($cmd) = @_;
+    my ($cname, $crest) = $cmd =~ /^(\S+)(.*?)$/;
+    if (my $path = can_run($cname)) {
+        return "$path$crest";
+    } else {
+        print STDERR "cannot find $cname in path\n" and exit 1;
+    }
+}
+
+# The main program
+sub send_selection {
+    my %options = @_;
+    my $selection_command = check_command(
+        $options{'selection-command'} || 'sselp'
+    );
+
+    my $selection = get_selection($selection_command);
+    exit 1 unless $selection;
+    my $command   = get_program;
+    exit 1 unless $command;
+    run_program($command, $selection);
+}
+
+
+my %cl_options;
+GetOptions(\%cl_options,
     "help|?",
     "man",
+    "selection-command=s"
 ) or pod2usage(2);
 
-pod2usage(1) if $options{help};
-pod2usage(-exitval => 0, -verbose => 2) if $options{man};
+pod2usage(1) if $cl_options{help};
+pod2usage(-exitval => 0, -verbose => 2) if $cl_options{man};
 
-my $selection = get_selection;
-exit 1 unless $selection;
-my $command   = get_program;
-exit 1 unless $command;
-run_program($command, $selection);
+send_selection(%cl_options);
 
 __END__
 
@@ -76,6 +98,11 @@ Print a brief help message and exit.
 =item B<--man>
 
 Display the manual page and exit.
+
+=item B<--selection-command>=I<string>
+
+Use I<string> as the command for retrieving the initial text rather than
+B<sselp> (the default).
 
 =back
 
