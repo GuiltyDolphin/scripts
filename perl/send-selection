@@ -1,0 +1,45 @@
+#!/usr/bin/env perl
+# Send the current X-selection to a command.
+# Allows editing the selection and prompts for a command.
+#
+# FIXME: Newlines are currently removed from the end of *any* selection, the
+# piping process needs a bit of work.
+
+use IPC::Cmd qw(can_run run run_forked);
+
+my $sselp  = can_run('sselp')  or die 'sselp is not installed!';
+my $zenity = can_run('zenity') or die 'zenity is not installed!';
+
+sub get_selection {
+    my $sel = run_forked($sselp);
+    chomp (my $selection = $sel->{stdout});
+    my $modified = run_forked(
+        "$zenity --text-info --title 'Selection' --editable",
+        { child_stdin => $selection, },
+    );
+    chomp (my $out = $modified->{stdout});
+    return $out;
+}
+
+sub get_program {
+    my $prog;
+    run(
+        command => "$zenity --entry --title 'Command' --text 'Enter command:'",
+        buffer => \$prog,
+    );
+    chomp $prog;
+    return $prog;
+}
+
+sub run_program {
+    my ($program, $selection) = @_;
+    run_forked($program, {
+        child_stdin => $selection,
+    });
+}
+
+my $selection = get_selection;
+exit 1 unless $selection;
+my $command   = get_program;
+exit 1 unless $command;
+run_program($command, $selection);
