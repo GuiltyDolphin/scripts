@@ -41,9 +41,11 @@ sub get_program {
 }
 
 sub run_program {
-    my ($program, $selection) = @_;
+    my ($program, $selection, $silence) = @_;
     run_forked($program, {
         child_stdin => $selection,
+        stdout_handler => !$silence && sub { print STDOUT $_[0] },
+        stderr_handler => !$silence && sub { print STDERR $_[0] },
     });
 }
 
@@ -76,7 +78,7 @@ sub send_selection {
     exit 1 unless $selection;
     my $command   = get_program($options{command}, $should_prompt_command);
     exit 1 unless $command;
-    run_program($command, $selection);
+    run_program($command, $selection, $options{silence});
 }
 
 sub print_version {
@@ -92,6 +94,7 @@ GetOptions(\%cl_options,
     "prompt-selection",
     "selection=s",
     "selection-command=s",
+    "silence",
     "version",
 ) or pod2usage(2);
 
@@ -154,6 +157,10 @@ B<--selection> will be used.
 
 Use I<string> as the command for retrieving the initial text rather than
 B<sselp> (the default).
+
+=item B<--silence>
+
+Suppress the standard output and error of the command.
 
 =item B<--version>
 
