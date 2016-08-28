@@ -192,4 +192,11 @@ Start with the selection as 'foo' and the command as 'cat', but still prompt:
 
 Ben Moon C<< <software@guiltydolphin.com> >>
 
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2016 Ben Moon
+
+Licensed under The GNU General Public License Version 3 which can be found at
+L<https://www.gnu.org/licenses/gpl-3.0.txt>
+
 =cut
