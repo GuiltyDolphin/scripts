@@ -190,7 +190,7 @@ Start with the selection as 'foo' and the command as 'cat', but still prompt:
 
 Echo the user's selection twice (on separate lines):
 
-  send-selection --command="xargs -Isel echo -e 'sel\nsel'"
+  send-selection --command="xargs -Isel -0 echo -e 'sel\nsel'"
 
 =head1 AUTHOR
 
