@@ -188,6 +188,10 @@ Start with the selection as 'foo' and the command as 'cat', but still prompt:
 
   send-selection --selection='foo' --command='cat' --prompt-selection --prompt-command
 
+Echo the user's selection twice (on separate lines):
+
+  send-selection --command="xargs -Isel echo -e 'sel\nsel'"
+
 =head1 AUTHOR
 
 Ben Moon C<< <software@guiltydolphin.com> >>
