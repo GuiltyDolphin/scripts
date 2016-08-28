@@ -12,9 +12,13 @@ use Pod::Usage;
 my $zenity = can_run('zenity') or die 'zenity is not installed!';
 
 sub get_selection {
-    my ($selection_command) = @_;
-    my $sel = run_forked($selection_command);
-    chomp (my $selection = $sel->{stdout});
+    my ($selection_command, $selection, $prompt) = @_;
+    unless ($selection) {
+        my $sel = $selection || run_forked($selection_command);
+        chomp ($selection = $sel->{stdout});
+    } else {
+        return $selection unless $prompt;
+    }
     my $modified = run_forked(
         "$zenity --text-info --title 'Selection' --editable",
         { child_stdin => $selection, },
@@ -61,8 +65,14 @@ sub send_selection {
     );
     my $should_prompt_command = $options{'prompt-command'} ||
         !$options{command};
+    my $should_prompt_selection = $options{'prompt-selection'} ||
+        !$options{selection};
 
-    my $selection = get_selection($selection_command);
+    my $selection = get_selection(
+        $selection_command,
+        $options{selection},
+        $should_prompt_selection
+    );
     exit 1 unless $selection;
     my $command   = get_program($options{command}, $should_prompt_command);
     exit 1 unless $command;
@@ -76,6 +86,8 @@ GetOptions(\%cl_options,
     "help|?",
     "man",
     "prompt-command",
+    "prompt-selection",
+    "selection=s",
     "selection-command=s",
 ) or pod2usage(2);
 
@@ -115,6 +127,19 @@ Display the manual page and exit.
 =item B<--prompt-command>
 
 Prompt the user for a command regardless of other flags.
+
+=item B<--prompt-selection>
+
+Prompt the user to edit the selection regardless of other flags.
+
+=item B<--selection>=I<string>
+
+Use I<string> as the selection and don't prompt the user. In conjunction with
+B<--prompt-selection> this uses I<string> as the default selection and allows
+editing.
+
+If both B<--selection> and B<--selection-command> are specified only
+B<--selection> will be used.
 
 =item B<--selection-command>=I<string>
 
