@@ -11,8 +11,8 @@ sub exit_bad_dir {
 }
 
 sub find_executables {
-    my ($look) = @_;
-    my @look = glob $look or exit_bad_dir($look);
+    my @look = @_;
+    @look = map { glob $_ } @look;
     map { path($_)->exists or exit_bad_dir($_) } @look;
     my @paths = File::Find::Rule->file->executable->in(@look);
     return map { path $_ } @paths;
@@ -30,8 +30,8 @@ sub link_files {
 }
 
 sub link_scripts {
-    my ($look, $to) = @_;
-    my @es = find_executables($look);
+    my ($to, @look) = @_;
+    my @es = find_executables(@look);
     link_files(path($to), @es);
 }
 
@@ -43,11 +43,10 @@ GetOptions(\%opts,
 pod2usage(1) if $opts{help};
 pod2usage(-exitval => 0, -verbose => 2) if $opts{man};
 
-my $from = shift or pod2usage(2);
-my $to   = shift or pod2usage(2);
-shift and pod2usage(2);
+my $to = shift or pod2usage(2);
+my @from = @ARGV or pod2usage(2);
 
-link_scripts($from, $to);
+link_scripts($to, @from);
 
 __END__
 
@@ -57,7 +56,7 @@ link-scripts - link scripts under a common directory.
 
 =head1 SYNOPSIS
 
-    link-scripts FROM TO [options]
+    link-scripts [options] TO FROM..
 
 =head1 DESCRIPTION
 
@@ -81,7 +80,7 @@ Display the manual page and exit.
 
 Link all executables in '~/scripts' to '~/.local/bin':
 
-    link-scripts ~/scripts ~/.local/bin
+    link-scripts ~/.local/bin ~/scripts
 
 =head1 AUTHOR
 
