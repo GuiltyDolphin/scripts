@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+
+use Path::Tiny;
+use File::Find::Rule;
+use Getopt::Long;
+use Pod::Usage;
+
+sub exit_bad_dir {
+    my ($path) = @_;
+    print("link-scripts: $path no such directory\n") and exit 1;
+}
+
+sub find_executables {
+    my ($look) = @_;
+    my @look = glob $look or exit_bad_dir($look);
+    map { path($_)->exists or exit_bad_dir($_) } @look;
+    my @paths = File::Find::Rule->file->executable->in(@look);
+    return map { path $_ } @paths;
+}
+
+sub link_files {
+    my ($bin, @es) = @_;
+    $bin->mkpath;
+    foreach my $e (@es) {
+        my $base = $e->basename;
+        my $abs  = $e->realpath;
+        my $link_target = path($bin, $base);
+        symlink $abs, $link_target;
+    }
+}
+
+sub link_scripts {
+    my ($look, $to) = @_;
+    my @es = find_executables($look);
+    link_files(path($to), @es);
+}
+
+my %opts;
+GetOptions(\%opts,
+    '--help|?',
+    '--man',
+) or pod2usage(2);
+pod2usage(1) if $opts{help};
+pod2usage(-exitval => 0, -verbose => 2) if $opts{man};
+
+my $from = shift or pod2usage(2);
+my $to   = shift or pod2usage(2);
+shift and pod2usage(2);
+
+link_scripts($from, $to);
+
+__END__
+
+=head1 NAME
+
+link-scripts - link scripts under a common directory.
+
+=head1 SYNOPSIS
+
+    link-scripts FROM TO [options]
+
+=head1 DESCRIPTION
+
+B<link-scripts> links executables under a filepath to a common directory.
+
+=head1 OPTIONS
+
+=over
+
+=item B<--help>
+
+Display a short help message and exit.
+
+=item B<--man>
+
+Display the manual page and exit.
+
+=back
+
+=head1 EXAMPLES
+
+Link all executables in '~/scripts' to '~/.local/bin':
+
+    link-scripts ~/scripts ~/.local/bin
+
+=head1 AUTHOR
+
+Ben Moon C<< <software@guiltydolphin.com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2016 Ben Moon
+
+Licensed under the GNU General Public License Version 3.
+
+=cut
